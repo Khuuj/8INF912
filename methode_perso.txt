@@ -1,0 +1,9 @@
+si action non présente pour etat e
+	ajout action pour etat e avec recompense 5
+action = recompense + gamma * maxrecompense prochain action pour etat resultant (0 si etat inconnu ou si aucune action connues)
+si victoire: last action recompense += 100
+si defaite: last action recompense -= 100
+choisir meilleure action 
+regarder etat resultant et ajouter etat aux etats resultants de action
+
+
