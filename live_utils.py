@@ -1,3 +1,7 @@
+import pyautogui as ptg 
+import numpy as np
+
+
 globalGameOn = False
 globalBotHP = 30
 globalBaseBotHP = 30
@@ -26,6 +30,9 @@ globalCardsInHandId = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,]
 globalOptions = []
 globalGameState = "none" #lose/win
 globalLine = 0
+globalCurrentOption = -1
+globalOptionsInfos =[]
+globalCurrentOptionsRewards =[]
 
 
 #mouse coordinates
@@ -34,6 +41,7 @@ globalPosEndTurn = [1572, 495]
 globalPosBotHero_Confirm = [961, 843]
 globalPosHeroPower = [1147, 828]
 globalPosOpponentHero = [969, 191]
+globalPosCenter = [960, 540]
 
 #pos for a two choice situation
 globalPosDoubleChoice = {
@@ -91,8 +99,8 @@ globalPosEnemyBoard = {
     13 :(1342, 397)
 }
 
-#h1-h13 = all hand positions on bot side
-globalPosEnemyBoard = {
+#h1-h10 = all hand positions on bot side
+globalPosHand = {
     1 :(626, 1022),
     2 :(686, 1034),
     3 :(760, 1033),
@@ -178,6 +186,8 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 	global globalLine
 	global globalBotSecretCount
 	global globalOpponentSecretCount
+	global globalCurrentOption
+	global globalOptionsInfos
 
 	#initiate game
 	if (msg_type == "ENTITY CREATED") & (obj.__class__.__name__ == "LiveGame"):
@@ -188,24 +198,36 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		globalBaseOpponentHP = 30
 		globalOpponentArmor = 0 
 		#globalFriendlyCreaturesOnBoard = [False, False,False,False,False,False,False]
-		globalFriendlyCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
-		globalFriendlyCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
-		globalFriendlyCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
+		#globalFriendlyCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
+		#globalFriendlyCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
+		#globalFriendlyCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
+		globalFriendlyCreaturesAtk =[]
+		globalFriendlyCreaturesHP = []
+		globalFriendlyCreautresId = []
 		#globalOpponentCreaturesOnBoard = [False, False,False,False,False,False,False]
 		globalFriendlyCreaturesOnBoardCount = 0
-		globalOpponentCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
-		globalOpponentCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
-		globalOpponentCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
+		#globalOpponentCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
+		#globalOpponentCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
+		#globalOpponentCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
+		globalOpponentCreaturesAtk =[]
+		globalOpponentCreaturesHP = []
+		globalOpponentCreautresId = []
 		globalOpponentCreaturesOnBoardCount = 0
 		globalCardsInDeckCount = 30
 		globalCardsInHandCount = 0
 		globalCardsInHandId = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,]
 		globalBotSecretCount = 0
 		globalOpponentSecretCount = 0
+		globalCurrentOption = -1
+		globalOptionsInfos =[]
+		globalCurrentOptionsRewards = []
 		print("Starting new game")
 
 	#updates stats
 	if (msg_type == "TAG UPDATED"):
+		
+		globalCurrentOption = -1
+		globalOptionsInfos =[]
 
 		#updates hand cards
 		if attr == 263:
@@ -259,6 +281,11 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 		# updates opponent creatures 
 
+	if msg_type == "OPTION LISTED":
+		globalCurrentOption +=1
+#		globalCurrentOption
+#conserver derniere option en memoire pour creer les suboptions
+
 
 
 
@@ -275,6 +302,110 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		align(value, 30),
 		align(globalLine, 10)
 	)
+
+#zoneOrigin corresponds either to hand or play or end turn or heroPower
+#originPos corresponds to the position of the entity acting 0-7 (hero included) for play, 1-10 (0-9) for hand
+#zoneDest is either own friendly or opponent
+#targetPos corresponds to the position of the target :  (how to do for playing creatures); none if card played is a spell
+#secondTargetPos corresponds to the position of the target if creature with a battlecry needing a target
+def play_option(zoneOrigin, originPos = None, zoneDest = None, targetPos = None, secondTargetZone = None, secondTargetPos = None):
+
+
+
+	"""defining the origin positions """
+	#ending the turn
+	if zoneOrigin == "endturn":
+		ptg.moveTo(globalPosEndTurn[0], globalPosEndTurn[1] )
+		ptg.click()
+
+	if zoneOrigin == "play":
+
+		#hero attacking
+		if originPos == 0:
+			xorigin = globalPosBotHero_Confirm[0]
+			yorigin = globalPosBotHero_Confirm[1]
+
+		else:
+			trueOriginPos = 6+originPos*2-1-globalFriendlyCreaturesOnBoardCount
+
+			xorigin = globalPosBotBoard[trueOriginPos-1][0]
+			yorigin = globalPosBotBoard[trueOriginPos-1][1]
+
+	if zoneOrigin == "hand":
+		xorigin = globalPosHand[originPos-1][0]
+		yorigin = globalPosHand[originPos-1][1]
+
+	if zoneOrigin == "heropower":
+		xorigin = globalPosHeroPower[0]
+		yorigin = globalPosHeroPower[1]
+		
+	"""defining the target positions """
+	
+	if not zoneDest :
+		xdest = globalPosCenter[0]
+		ydest = globalPosCenter[1]
+
+	else:
+		if zoneDest == "friendly":
+			if targetPos == 0:
+				xdest = globalPosBotHero_Confirm[0]
+				ydest = globalPosBotHero_Confirm[1] 
+
+			else :
+				trueTargetPos = 6+targetPos*2-1-globalFriendlyCreaturesOnBoardCount
+				xdest = globalPosBotBoard[trueTargetPos][0]
+				ydest = globalPosBotBoard[trueTargetPos][1]
+		
+		else:
+			if targetPos == 0:
+				xdest = globalPosOpponentHero[0]
+				ydest = globalPosOpponentHero[1] 
+
+			else :
+				trueTargetPos = 6+targetPos*2-1-globalOpponentCreaturesOnBoardCount
+				xdest = globalPosEnemyBoard[trueTargetPos][0]
+				ydest = globalPosEnemyBoard[trueTargetPos][1]
+
+	ptg.moveTo(xorigin, yorigin, 0.75)
+	ptg.click()
+	ptg.dragTo(xdest, ydest)
+	ptg.click()
+
+	if secondTargetPos:
+		if secondTargetZone == "friendly":
+			if secondTargetPos == 0:
+				xdestbis = globalPosBotHero_Confirm[0]
+				ydestbis = globalPosBotHero_Confirm[1] 
+
+			else :
+				if targetPos > secondTargetPos:
+					shift=0
+				else:
+					shift=1
+
+				trueTargetPos = 6 + (secondTargetPos+shift)*2 -1 -(globalFriendlyCreaturesOnBoardCount+1)
+
+				xdestbis = globalPosBotBoard[secondTargetPos][0]
+				ydestbis = globalPosBotBoard[secondTargetPos][1]
+		
+		else:
+			if secondTargetPos == 0:
+				xdestbis = globalPosOpponentHero[0]
+				ydestbis = globalPosOpponentHero[1] 
+
+			else :
+				trueDestBis = 6+originPos*2-1-globalFriendlyCreaturesOnBoardCount
+				xdestbis = globalPosEnemyBoard[trueDestBis][0]
+				ydestbis = globalPosEnemyBoard[trueDestBis][1]
+
+		ptg.moveTo(xdestbis, ydestbis)
+		ptg.click()
+
+
+
+
+
+
 
 
 def debug_player_names(player_manager):

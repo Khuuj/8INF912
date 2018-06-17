@@ -35,10 +35,10 @@ class LiveEntityTreeExporter(EntityTreeExporter):
 			#suboptions don't have a type
 			if not packet.type:
 				if isHero:
-					terminal_output("OPTION LISTED", packet.entity, packet.optype,  packet.id)
+					terminal_output("TARGET LISTED", packet.entity, packet.optype,  packet.id)
 
 				else:
-					terminal_output("OPTION LISTED", current_entity.tags.get(GameTag.ZONE_POSITION),  "",packet.id)
+					terminal_output("TARGET LISTED", current_entity.tags.get(GameTag.ZONE_POSITION),  "",packet.id)
 					
 
 			else:

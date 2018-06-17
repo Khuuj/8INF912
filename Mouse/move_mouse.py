@@ -1,32 +1,21 @@
-import pyautogui as ptg 
+import pyautogui as ptg
+import math
 
-#setting fail safes
-ptg.FAIL_SAFE=True
-ptg.PAUSE=1
+def move(x=None, y=None):
 
-#moving the pointer to screen center
-screenWidth, screenHeight = ptg.size()
-screenWidthMiddle = screenWidth / 2
-screenHeightMiddle = screenHeight / 2
+    screenWidth, screenHeight = ptg.size()
+    screenWidthMiddle = screenWidth / 2
+    screenHeightMiddle = screenHeight / 2
 
- 
-#ptg.moveTo(screenWidth / 2, screenHeight / 2)
-# ptg.click() #click!!
-i=0
+    print(screenWidthMiddle)
+    print(screenHeightMiddle)
 
-#while (ptg.position() != (screenWidthMiddle, screenHeightMiddle)):
-#	if (screenWidthMiddle > ptg.position()[0]):
-#		xmove = 100
-#	else:
-#		xmove =-100
-#	if screenHeightMiddle > ptg.position()[1]:
-#		ymove =100
-#	else:
-#		ymove =-100
-#	ptg.moveRel(xmove,ymove,1)
+    if not x:
+        ptg.moveTo(screenWidthMiddle, screenHeightMiddle, 0.7)
 
-xmove = screenWidthMiddle - ptg.position()[0]
-ymove = screenHeightMiddle - ptg.position()[1]
-ptg.moveRel(xmove,ymove,0.5)
 
-#moving mouse like in staircase pattern
+import numpy as np
+
+Q =[45,456,47,123,4]
+del Q[0]
+print (Q)
