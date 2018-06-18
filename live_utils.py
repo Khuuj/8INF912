@@ -34,6 +34,7 @@ globalLine = 0
 globalCurrentOption = -1
 globalOptionsInfos =[]
 globalCurrentOptionsRewards =[]
+globalLastLine = ""
 
 
 #mouse coordinates
@@ -102,16 +103,81 @@ globalPosEnemyBoard = {
 
 #h1-h10 = all hand positions on bot side
 globalPosHand = {
-    1 :(626, 1022),
-    2 :(686, 1034),
-    3 :(760, 1033),
-    4 :(812, 996),
-    5 :(831, 974),
-    6 :(909, 974),
-    7 :(973, 986),
-    8 :(1047, 972),
-    9 :(1078, 1042),
-    10 :(1182, 1020)
+	1:{
+		1: (949, 1007),
+	},
+	2:{
+		1: (851, 985),
+		2: (999, 1000),
+	},
+	3:{
+		1: (783, 997),
+		2: (920, 991),
+		3: (1057, 994),
+	},
+	4:{
+		1 :(733, 1053),
+		2 :(854, 1003),
+		3 :(994, 1032),
+		4 :(1125, 997),
+	},
+	5:{
+		1 :(688, 1023),
+		2 :(791, 998),
+		3 :(924, 1001),
+		4 :(1016, 1032),
+		5 :(1100, 1009),
+	},
+	6:{
+		1 : (681, 1039),
+		2 : (748, 1040),
+		3 : (872, 996),
+		4 : (920, 1006),
+		5 : (1043, 1018),
+		6 : (1142, 1041),
+	},
+	7:{
+		1 : (661, 1034),
+		2 : (745, 988),
+		3 : (824, 995),
+		4 : (877, 997),
+		5 : (968, 989),
+		6 : (1045, 1011),
+		7 : (1173, 1050),
+	},
+	8:{
+		1 : (647, 1044),
+		2 : (727, 1031),
+		3 : (779, 1026),
+		4 : (866, 995),
+		5 : (927, 971),
+		6 : (996, 994),
+		7 : (1066, 992),
+		8 : (1182, 1055),
+	},
+	9:{
+		1 : (624, 1038),
+		2 : (716, 1008),
+		3 : (766, 1025),
+		4 : (835, 984),
+		5 : (876, 993),
+		6 : (961, 1001),
+		7 : (1025, 1027),
+		8 : (1089, 1044),
+		9 : (1165, 1047),
+	},
+	10: {
+	    1 :(626, 1022),
+		2 :(686, 1034),
+		3 :(760, 1033),
+		4 :(812, 996),
+		5 :(831, 974),
+		6 :(909, 974),
+		7 :(973, 986),
+		8 :(1047, 972),
+		9 :(1078, 1042),
+		10 :(1182, 1020)
+	}
 }
 
 
@@ -189,6 +255,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 	global globalOpponentSecretCount
 	global globalCurrentOption
 	global globalOptionsInfos
+	global globalLastLine
 
 	#initiate game
 	if (msg_type == "ENTITY CREATED") & (obj.__class__.__name__ == "LiveGame"):
@@ -224,11 +291,11 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		globalCurrentOptionsRewards = []
 		print("Starting new game")
 
+		if obj.id>68:
+			globalOpponentCreautresId.append(obj)
+
 	#updates stats
 	if (msg_type == "TAG UPDATED"):
-
-		globalCurrentOption = -1
-		globalOptionsInfos =[]
 
 		#updates hand cards
 		if attr == 263:
@@ -281,19 +348,74 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 		# updates opponent creatures 
 
+	if msg_type == "END TURN":
+		zoneOrigin = "endturn"
+		globalOptionsInfos = []
+		globalOptionsInfos.append([zoneOrigin])
+		globalCurrentOption = 0
+
 	if msg_type == "OPTION LISTED":
-		globalCurrentOption +=1
-		globalOptionsInfos.append([])
-#		globalCurrentOption
-#conserver derniere option en memoire pour creer les suboptions
+		if (obj== 0) | (obj== 3) | (obj == 2):
+			zoneOrigin = "hand"
+		if obj == 65:
+			zoneOrigin = "heropower"
+			originPos = -1
+		if obj == 64:
+			zoneOrigin = "play"
+			originPos = 0
+		if obj == 1:
+			zoneOrigin = "play"
 
+		if attr:
+			originPos = attr
+		elif (obj != 65) & (obj != 64):
+			originPos = globalFriendlyCreaturesOnBoard.index(obj)
 
+		globalLastLine = "OPTION"
 
+		globalOptionsInfos.append([zoneOrigin, originPos])
+		globalCurrentOption += 1
 
+	if msg_type == "TARGET LISTED":
+		
+		if value == "The Innkeeper":
+			zoneDest = "opponent"
+			if attr:
+				targetPos = attr
+			else:
+				targetPos = globalOpponentCreaturesOnBoard.index(obj)
 
-	#####debug tests 
-	#if (obj.__class__.__name__ != "LiveGame") & (obj.__class__.__name__ != "LivePlayer"):
-	#	print(obj.card_id)
+		if value == "Learner#11393":
+			zoneDest = "friendly"
+			if attr:
+				targetPos = attr
+			else:
+				targetPos = globalFriendlyCreaturesOnBoard.index(obj)
+
+		if obj == 64:
+			print("ZEIORUJZOEIRUZEIO")
+			zoneDest = "friendly"
+			targetPos = 0
+		if obj == 66:
+			zoneDest = "opponent"
+			targetPos = 0
+		
+		if globalLastLine == "OPTION":
+			print(globalOptionsInfos)
+			globalOptionsInfos[globalCurrentOption].extend([zoneDest, targetPos])
+
+		else:
+			suboption = globalOptionsInfos[globalCurrentOption].copy()
+			print("avant :", globalOptionsInfos)
+			suboption[2] = zoneDest
+			suboption[3] = targetPos
+			globalOptionsInfos.append(suboption)
+			print("apres :", globalOptionsInfos)
+		
+			globalCurrentOption+=1
+		globalLastLine = "TARGET"
+		
+
 	globalLine +=1
 
 	return "{} | {} | {} | {} | {}".format(
@@ -311,96 +433,95 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 #secondTargetPos corresponds to the position of the target if creature with a battlecry needing a target
 def play_option(zoneOrigin, originPos = None, zoneDest = None, targetPos = None, secondTargetZone = None, secondTargetPos = None):
 
-
-
 	"""defining the origin positions """
 	#ending the turn
 	if zoneOrigin == "endturn":
 		ptg.moveTo(globalPosEndTurn[0], globalPosEndTurn[1] )
 		ptg.click()
 
-	if zoneOrigin == "play":
+	else :
 
-		#hero attacking
-		if originPos == 0:
-			xorigin = globalPosBotHero_Confirm[0]
-			yorigin = globalPosBotHero_Confirm[1]
+		if zoneOrigin == "play":
+
+			#hero attacking
+			if originPos == 0:
+				xorigin = globalPosBotHero_Confirm[0]
+				yorigin = globalPosBotHero_Confirm[1]
+
+			elif originPos != -1:
+				trueOriginPos = 6+originPos*2-1-globalFriendlyCreaturesOnBoardCount
+				xorigin = globalPosBotBoard[trueOriginPos][0]
+				yorigin = globalPosBotBoard[trueOriginPos][1]
+
+		if zoneOrigin == "hand":
+			xorigin = globalPosHand[globalCardsInHandCount][originPos-1][0]
+			yorigin = globalPosHand[globalCardsInHandCount][originPos-1][1]
+
+		if zoneOrigin == "heropower":
+			xorigin = globalPosHeroPower[0]
+			yorigin = globalPosHeroPower[1]
+			
+		"""defining the target positions """
+		
+		if not zoneDest :
+			xdest = globalPosCenter[0]
+			ydest = globalPosCenter[1]
 
 		else:
-			trueOriginPos = 6+originPos*2-1-globalFriendlyCreaturesOnBoardCount
+			if zoneDest == "friendly":
+				if targetPos == 0:
+					xdest = globalPosBotHero_Confirm[0]
+					ydest = globalPosBotHero_Confirm[1] 
 
-			xorigin = globalPosBotBoard[trueOriginPos-1][0]
-			yorigin = globalPosBotBoard[trueOriginPos-1][1]
+				else :
+					trueTargetPos = 6+targetPos*2-1-globalFriendlyCreaturesOnBoardCount
+					xdest = globalPosBotBoard[trueTargetPos][0]
+					ydest = globalPosBotBoard[trueTargetPos][1]
+			
+			if zoneDest == "opponent":
+				if targetPos == 0:
+					xdest = globalPosOpponentHero[0]
+					ydest = globalPosOpponentHero[1] 
 
-	if zoneOrigin == "hand":
-		xorigin = globalPosHand[originPos-1][0]
-		yorigin = globalPosHand[originPos-1][1]
+				else :
+					trueTargetPos = 6+targetPos*2-1-globalOpponentCreaturesOnBoardCount
+					xdest = globalPosEnemyBoard[trueTargetPos][0]
+					ydest = globalPosEnemyBoard[trueTargetPos][1]
 
-	if zoneOrigin == "heropower":
-		xorigin = globalPosHeroPower[0]
-		yorigin = globalPosHeroPower[1]
-		
-	"""defining the target positions """
-	
-	if not zoneDest :
-		xdest = globalPosCenter[0]
-		ydest = globalPosCenter[1]
-
-	else:
-		if zoneDest == "friendly":
-			if targetPos == 0:
-				xdest = globalPosBotHero_Confirm[0]
-				ydest = globalPosBotHero_Confirm[1] 
-
-			else :
-				trueTargetPos = 6+targetPos*2-1-globalFriendlyCreaturesOnBoardCount
-				xdest = globalPosBotBoard[trueTargetPos][0]
-				ydest = globalPosBotBoard[trueTargetPos][1]
-		
-		else:
-			if targetPos == 0:
-				xdest = globalPosOpponentHero[0]
-				ydest = globalPosOpponentHero[1] 
-
-			else :
-				trueTargetPos = 6+targetPos*2-1-globalOpponentCreaturesOnBoardCount
-				xdest = globalPosEnemyBoard[trueTargetPos][0]
-				ydest = globalPosEnemyBoard[trueTargetPos][1]
-
-	ptg.moveTo(xorigin, yorigin, 0.75)
-	ptg.click()
-	ptg.dragTo(xdest, ydest)
-	ptg.click()
-
-	if secondTargetPos:
-		if secondTargetZone == "friendly":
-			if secondTargetPos == 0:
-				xdestbis = globalPosBotHero_Confirm[0]
-				ydestbis = globalPosBotHero_Confirm[1] 
-
-			else :
-				if targetPos > secondTargetPos:
-					shift=0
-				else:
-					shift=1
-
-				trueTargetPos = 6 + (secondTargetPos+shift)*2 -1 -(globalFriendlyCreaturesOnBoardCount+1)
-
-				xdestbis = globalPosBotBoard[secondTargetPos][0]
-				ydestbis = globalPosBotBoard[secondTargetPos][1]
-		
-		else:
-			if secondTargetPos == 0:
-				xdestbis = globalPosOpponentHero[0]
-				ydestbis = globalPosOpponentHero[1] 
-
-			else :
-				trueDestBis = 6+originPos*2-1-globalFriendlyCreaturesOnBoardCount
-				xdestbis = globalPosEnemyBoard[trueDestBis][0]
-				ydestbis = globalPosEnemyBoard[trueDestBis][1]
-
-		ptg.moveTo(xdestbis, ydestbis)
+		ptg.moveTo(xorigin, yorigin, 0.75)
 		ptg.click()
+		ptg.dragTo(xdest, ydest)
+		ptg.click()
+
+		if secondTargetPos:
+			if secondTargetZone == "friendly":
+				if secondTargetPos == 0:
+					xdestbis = globalPosBotHero_Confirm[0]
+					ydestbis = globalPosBotHero_Confirm[1] 
+
+				else :
+					if targetPos > secondTargetPos:
+						shift=0
+					else:
+						shift=1
+
+					trueTargetPos = 6 + (secondTargetPos+shift)*2 -1 -(globalFriendlyCreaturesOnBoardCount+1)
+
+					xdestbis = globalPosBotBoard[secondTargetPos][0]
+					ydestbis = globalPosBotBoard[secondTargetPos][1]
+			
+			if zoneDest == "opponent":
+				if secondTargetPos == 0:
+					xdestbis = globalPosOpponentHero[0]
+					ydestbis = globalPosOpponentHero[1] 
+
+				else :
+					trueDestBis = 6+originPos*2-1-globalFriendlyCreaturesOnBoardCount
+					xdestbis = globalPosEnemyBoard[trueDestBis][0]
+					ydestbis = globalPosEnemyBoard[trueDestBis][1]
+
+			ptg.moveTo(xdestbis, ydestbis)
+			ptg.click()
 
 
 

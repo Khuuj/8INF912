@@ -3,8 +3,10 @@ from hearthstone.enums import GameTag
 
 from live_utils import terminal_output
 
+lastPlayer =""
 
 class LiveEntity(Entity):
+
 
 	def __init__(self, entity_id):
 		super(LiveEntity, self).__init__(entity_id)
@@ -19,7 +21,17 @@ class LiveEntity(Entity):
 		# this happens when game calls register_entity and entity sets self.game
 		self._game = value
 		if value is not None:
-			terminal_output("ENTITY CREATED", self)
+			if (self.id < 34):
+				self.ownerstr = "Learner#11393"
+				#self.tags[GameTag.CONTROLLER] = "Learner#11393"
+			elif (self.id < 64):
+				self.ownerstr = "The Innkeeper"
+				#self.tags[GameTag.CONTROLLER] = "The Innkeeper"
+			else:
+				global lastPlayer
+				self.ownerstr = lastPlayer
+				#self.tags[GameTag.CONTROLLER] =  lastPlayer
+			terminal_output("ENTITY CREATED", self, self.controller)
 			# push data to an end-point
 			pass
 
@@ -34,8 +46,12 @@ class LiveEntity(Entity):
 		)
 
 	def tag_change(self, tag, value):
+		global lastPlayer
+		if self.id == 3:
+			lastPlayer = "The Innkeeper"
+		else:
+			lastPlayer = "Learner#11393"
 		if tag == GameTag.CONTROLLER and not self._initial_controller:
-			print("azijezil")
 			self._initial_controller = self.tags.get(GameTag.CONTROLLER, value)
 		self.tags[tag] = value
 		terminal_output("TAG UPDATED", self, tag, value)

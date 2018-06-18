@@ -35,12 +35,10 @@ class LiveEntityTreeExporter(EntityTreeExporter):
 			#suboptions don't have a type
 			if not packet.type:
 				if isHero:
-					#terminal_output("TARGET LISTED", packet.entity, packet.optype,  packet.id)
 					terminal_output("TARGET LISTED", packet.entity)
 
 				else:
-					#terminal_output("TARGET LISTED", current_entity.tags.get(GameTag.ZONE_POSITION),  "",packet.id)
-					terminal_output("TARGET LISTED", current_entity, current_entity.tags.get(GameTag.ZONE_POSITION))
+					terminal_output("TARGET LISTED", current_entity, current_entity.tags.get(GameTag.ZONE_POSITION), current_entity.ownerstr)
 					
 
 			else:
@@ -51,7 +49,7 @@ class LiveEntityTreeExporter(EntityTreeExporter):
 
 		#option end turn
 		if packet.type == 2:
-			terminal_output("OPTION LISTED", packet.ts, packet.type, packet.id)
+			terminal_output("END TURN", packet.ts, packet.type, packet.id)
 
 	def handle_send_option(self, packet):
 		terminal_output("sendoptions", packet.target, packet.position, packet.suboption)
