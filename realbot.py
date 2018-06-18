@@ -34,6 +34,9 @@ def main():
 
         while True:
             sleep(1)
+            ## calls the bot here
+            ## voir methode_perso.txt
+            ## pour mettre à jour l'état accessible par l'action, appeler la methode dans handlle_send_option
         
     except:
         print(traceback.format_exc())
