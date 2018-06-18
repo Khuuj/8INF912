@@ -1,5 +1,6 @@
 import pyautogui as ptg 
 import numpy as np
+from hearthstone.enums import GameTag
 
 
 globalGameOn = False
@@ -225,7 +226,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 	#updates stats
 	if (msg_type == "TAG UPDATED"):
-		
+
 		globalCurrentOption = -1
 		globalOptionsInfos =[]
 
@@ -239,8 +240,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 			globalCardsInDeckCount -= value
 
 		if (attr == 49) & (value == 1):
-			print("zklsjeljkz")
-
+			obj.tags['GameTag.ZONE'] = 1
 
 
 
@@ -283,6 +283,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 	if msg_type == "OPTION LISTED":
 		globalCurrentOption +=1
+		globalOptionsInfos.append([])
 #		globalCurrentOption
 #conserver derniere option en memoire pour creer les suboptions
 

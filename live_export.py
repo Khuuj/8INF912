@@ -24,7 +24,7 @@ class LiveEntityTreeExporter(EntityTreeExporter):
 
 		#id represents the id of the option or the suboption
 
-		if (packet.entity == 66) | (packet.entity == 64) :
+		if (packet.entity == 66) | (packet.entity == 64) | (packet.entity == 65):
 			isHero = True
 
 		#viable options which are not end turn
@@ -35,14 +35,19 @@ class LiveEntityTreeExporter(EntityTreeExporter):
 			#suboptions don't have a type
 			if not packet.type:
 				if isHero:
-					terminal_output("TARGET LISTED", packet.entity, packet.optype,  packet.id)
+					#terminal_output("TARGET LISTED", packet.entity, packet.optype,  packet.id)
+					terminal_output("TARGET LISTED", packet.entity)
 
 				else:
-					terminal_output("TARGET LISTED", current_entity.tags.get(GameTag.ZONE_POSITION),  "",packet.id)
+					#terminal_output("TARGET LISTED", current_entity.tags.get(GameTag.ZONE_POSITION),  "",packet.id)
+					terminal_output("TARGET LISTED", current_entity, current_entity.tags.get(GameTag.ZONE_POSITION))
 					
 
 			else:
-				terminal_output("OPTION LISTED", current_entity.zone, current_entity.tags.get(GameTag.ZONE_POSITION),  packet.id)
+				if isHero:
+					terminal_output("OPTION LISTED", packet.entity)
+				else:
+					terminal_output("OPTION LISTED", current_entity.zone, current_entity.tags.get(GameTag.ZONE_POSITION),  packet.id)
 
 		#option end turn
 		if packet.type == 2:

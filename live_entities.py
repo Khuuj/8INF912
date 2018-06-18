@@ -23,8 +23,19 @@ class LiveEntity(Entity):
 			# push data to an end-point
 			pass
 
+	@property
+	def controller(self):
+		return self.game.get_player(self.tags.get(GameTag.CONTROLLER, 0))
+
+	@property
+	def initial_controller(self):
+		return self.game.get_player(
+			self._initial_controller or self.tags.get(GameTag.CONTROLLER, 0)
+		)
+
 	def tag_change(self, tag, value):
 		if tag == GameTag.CONTROLLER and not self._initial_controller:
+			print("azijezil")
 			self._initial_controller = self.tags.get(GameTag.CONTROLLER, value)
 		self.tags[tag] = value
 		terminal_output("TAG UPDATED", self, tag, value)
