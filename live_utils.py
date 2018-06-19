@@ -337,6 +337,8 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		if obj.id == 68:
 			if globalCardsInHandCount == 4:
 				obj.tags['GameTag.ZONE_POSITION'] = 5
+				print(obj.tags['GameTag.ZONE_POSITION'])
+				globalCardsInHandCount +=1
 
 
 	if (msg_type == "ENTITY UPDATED"):
@@ -344,6 +346,13 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 			if ( (attr == 0) | (attr == 3) | (attr == 2)):
 				globalCardsInHandId.append(obj.card_id)
 				globalCardsInHandId.sort()
+				globalCardsInHandCount +=1
+
+		if value:
+			if value == "The Innkeeper":
+				globalOpponentCreaturesInfos.append([obj.card_id, 0, obj.id])
+				globalOpponentCreaturesInfos.sort(key=lambda info: info[0])
+				globalOpponentCreaturesOnBoardCount +=1
 
 			
 
@@ -407,20 +416,21 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 		if (attr == 49) & (value == 1):
 			obj.tags['GameTag.ZONE'] = 1
-			if obj.ownerstr == "The Innkeeper":
-				#globalOpponentCreautresId.append(obj.id)
-				#globalOpponentCreautresCardId.append(obj.card_id)
-				#globalOpponentCreaturesDmg.append(0)
-				globalOpponentCreaturesInfos.append([obj.card_id, 0, obj.id])
-				globalOpponentCreaturesInfos.sort(key=lambda info: info[0])
-				globalOpponentCreaturesOnBoardCount +=1
-			else:
-				#globalFriendlyCreautresId.append(obj.id)
-				#globalFriendlyCreautresCardId.append(obj.card_id)
-				#globalFriendlyCreaturesDmg.append(0)
-				globalFriendlyCreaturesInfos.append([obj.card_id, 0, obj.id])
-				globalFriendlyCreaturesInfos.sort(key=lambda info: info[0])
-				globalFriendlyCreaturesOnBoardCount +=1
+			#print(obj.ownerstr)
+			#if obj.ownerstr == "The Innkeeper":
+			#	#globalOpponentCreautresId.append(obj.id)
+			#	#globalOpponentCreautresCardId.append(obj.card_id)
+			#	#globalOpponentCreaturesDmg.append(0)
+			#	globalOpponentCreaturesInfos.append([obj.card_id, 0, obj.id])
+			#	globalOpponentCreaturesInfos.sort(key=lambda info: info[0])
+			#	globalOpponentCreaturesOnBoardCount +=1
+			#else:
+			#globalFriendlyCreautresId.append(obj.id)
+			#globalFriendlyCreautresCardId.append(obj.card_id)
+			#globalFriendlyCreaturesDmg.append(0)
+			globalFriendlyCreaturesInfos.append([obj.card_id, 0, obj.id])
+			globalFriendlyCreaturesInfos.sort(key=lambda info: info[0])
+			globalFriendlyCreaturesOnBoardCount +=1
 
 		#cards goes to graveyard: out of the previous zone
 		if (attr == 49) & (value == 5):
@@ -464,14 +474,14 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 			if (attr == 292):
 				globalBotArmor = value
 
-			#updates mana at the start of the turn
-			if attr == 26:
-				globalBotManaTotal = value
-				globalBotManaAvailable = value
-			
-			#updates mana available after mana usage
-			if attr == 25:
-				globalBotManaAvailable = globalBotManaTotal-value
+		#updates mana at the start of the turn
+		if attr == 26:
+			globalBotManaTotal = value
+			globalBotManaAvailable = value
+		
+		#updates mana available after mana usage
+		if attr == 25:
+			globalBotManaAvailable = globalBotManaTotal-value
 
 		# updates opponent stats
 		if (obj.id == 66):

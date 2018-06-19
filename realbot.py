@@ -31,6 +31,8 @@ def choose_action():
     state = [utils.globalBotManaTotal, utils.globalBotManaAvailable, utils.globalBotHP, utils.globalOpponentHP, utils.globalFriendlyCreaturesInfos, utils.globalOpponentCreaturesInfos]
     stringState =  str(state)
 
+    print(stringState)
+
     #add state with empty action_list
     if not utils.globalR.__contains__(stringState):
         utils.globalQ[stringState] = {}
@@ -60,16 +62,18 @@ def choose_action():
             actions_rewards.append(reward)
 
     np_actions_rewards = np.asarray(actions_rewards)
-    actions_rewards_max = np.where(np_actions_rewards == np.max(np_actions_rewards))
+    actions_rewards_max = np.where(np_actions_rewards == np.max(np_actions_rewards))[0]
+
     index = actions_rewards_max[0]
 
     if np.size(actions_rewards_max)>1:
         index = np.random.choice(actions_rewards_max[0])
 
-    if utils.globalR[stringState][str(cards_ids_actions[index])][1] == "":
-        utils.globalStateWaiting = stringState
-        utils.globalActionWaiting =str(cards_ids_actions[index])
-        utils.globalMajWaiting = True
+    if nextState!=stringState:
+        if utils.globalR[stringState][str(cards_ids_actions[index])][1] == "":
+            utils.globalStateWaiting = stringState
+            utils.globalActionWaiting =str(cards_ids_actions[index])
+            utils.globalMajWaiting = True
 
     #useless
     else:
@@ -77,6 +81,7 @@ def choose_action():
 
     args = [None, None, None, None]
     
+
     for i in range(0,len(available_actions[index])):
         args[i] = available_actions[index][i]
 
