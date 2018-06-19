@@ -40,7 +40,7 @@ globalGameState = "none" #lose/win
 globalLine = 0
 globalCurrentOption = -1
 globalOptionsInfos =[]
-globalOptionsCardIds = []
+globalActionsInfos = []
 globalCurrentOptionsRewards =[]
 globalLastLine = ""
 
@@ -282,7 +282,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 	global globalCurrentOption
 	global globalOptionsInfos
 	global globalLastLine
-	global globalOptionsCardIds
+	global globalActionsInfos
 	
 	global globalR
 	global globalQ
@@ -294,6 +294,8 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 	global globalGameStarted
 	global globalChoiceToMake
 	global globalOpponentIsplayingHisTurn
+
+	optionAlreadyListed = True
 
 	#initiate game
 	if (msg_type == "ENTITY CREATED"):
@@ -516,8 +518,8 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		globalOptionsInfos = []
 		globalOptionsInfos.append([zoneOrigin])
 		globalCurrentOption = 0
-		globalOptionsCardIds = []
-		globalOptionsCardIds.append([])
+		globalActionsInfos = []
+		globalActionsInfos.append([])
 
 		globalChoiceToMake = True
 
@@ -540,11 +542,6 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 			#if owner = innkeeper : mettre a jour son cote
 			#lese if zone = 1 mettre a jour cote bot
-			
-
-		globalLastLine = "OPTION"
-
-		globalOptionsInfos.append([zoneOrigin, originPos])
 
 		#add OptionscardIds origin info
 		if value:
@@ -552,61 +549,113 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		else:
 			originCardId = obj
 
-		globalOptionsCardIds.append([originCardId])
-#print(globalOptionsCardIds)
-		globalCurrentOption += 1
+		globalLastLine = "OPTION"
+
+		if zoneOrigin == "play":
+			for x in globalFriendlyCreaturesInfos:
+				if x[2] == value.id:
+					originDmg = x[1]
+
+		action_infos = [originCardId, originDmg]
+
+
+		if (action_infos in globalActionsInfos):
+			optionAlreadyListed = True
+
+		else:
+			globalOptionsInfos.append([zoneOrigin, originPos])
+
+			globalActionsInfos.append(action_infos)
+	#print(globalActionsInfos)
+			globalCurrentOption += 1
+
+			optionAlreadyListed = False
 
 	if msg_type == "TARGET LISTED":
+
+		if not optionAlreadyListed:
 		
-		if value == "The Innkeeper":
-			zoneDest = "opponent"
-			if attr:
-				targetPos = attr
+			if value == "The Innkeeper":
+				zoneDest = "opponent"
+				if attr:
+					targetPos = attr
+				else:
+					targetPos = globalOpponentCreaturesOnBoard.index(obj)
+
+			if value == "Learner#11393":
+				zoneDest = "friendly"
+				if attr:
+					targetPos = attr
+				else:
+					targetPos = globalFriendlyCreaturesOnBoard.index(obj)
+
+			if obj == 64:
+				zoneDest = "friendly"
+				targetPos = 0
+			if obj == 66:
+				zoneDest = "opponent"
+				targetPos = 0
+
+			#add OptionscardIds origin info
+			if value:
+				targetCardId = obj.card_id
 			else:
-				targetPos = globalOpponentCreaturesOnBoard.index(obj)
+				targetCardId = obj
 
-		if value == "Learner#11393":
-			zoneDest = "friendly"
-			if attr:
-				targetPos = attr
+			if globalLastLine == "OPTION":
+	#print(globalOptionsInfos)
+				globalOptionsInfos[globalCurrentOption].extend([zoneDest, targetPos])
+				#globalActionsInfos[globalCurrentOption].append(targetCardId)
+
+				if (obj != 64) & (obj != 66):
+					if zoneDest == "friendly":
+						for x in globalFriendlyCreaturesInfos:
+							if x[1] == obj.id:
+								targetDmg = x[2]
+
+					if zoneDest == "opponent":
+						for x in globalOpponentCreaturesInfos:
+							if x[1] == obj.id:
+								targetDmg = x[2]
+
+				globalActionsInfos[globalCurrentOption].extend([targetCardId, targetDmg, zoneDest])
+
+
 			else:
-				targetPos = globalFriendlyCreaturesOnBoard.index(obj)
+				suboption = globalOptionsInfos[globalCurrentOption].copy()
+				subOptionAction = globalActionsInfos[globalCurrentOption][:]
+	#subOptionAction = globalActionsInfos[globalCurrentOption].copy()
+	#print("avant :", globalOptionsInfos)
+				suboption[2] = zoneDest
+				suboption[3] = targetPos
+				
 
-		if obj == 64:
-			zoneDest = "friendly"
-			targetPos = 0
-		if obj == 66:
-			zoneDest = "opponent"
-			targetPos = 0
+				if (obj != 64) & (obj != 66):
+					if zoneDest == "friendly":
+						for x in globalFriendlyCreaturesInfos:
+							if x[1] == obj.id:
+								targetDmg = x[2]
 
-		#add OptionscardIds origin info
-		if value:
-			targetCardId = obj.card_id
-		else:
-			targetCardId = obj
-		
-		if globalLastLine == "OPTION":
-#print(globalOptionsInfos)
-			globalOptionsInfos[globalCurrentOption].extend([zoneDest, targetPos])
-			globalOptionsCardIds[globalCurrentOption].append(targetCardId)
+					if zoneDest == "opponent":
+						for x in globalOpponentCreaturesInfos:
+							if x[1] == obj.id:
+								targetDmg = x[2]
 
 
-		else:
-			suboption = globalOptionsInfos[globalCurrentOption].copy()
-			suboptionCardId = globalOptionsCardIds[globalCurrentOption].copy()
-#print("avant :", globalOptionsInfos)
-			suboption[2] = zoneDest
-			suboption[3] = targetPos
-			globalOptionsInfos.append(suboption)
-			print("apres :", globalOptionsInfos)
-			
+				subOptionAction[-3] = targetCardId
+				subOptionAction[-2] = targetDmg
+				subOptionAction[-1] = zoneDest
 
-			suboptionCardId[1] = targetCardId
-			globalOptionsCardIds.append(suboptionCardId)
-#print(globalOptionsCardIds)
+				if not (subOptionAction in globalActionsInfos):
 
-			globalCurrentOption+=1
-		globalLastLine = "TARGET"
+					globalOptionsInfos.append(suboption)
+					print("apres :", globalOptionsInfos)
+					globalActionsInfos.append(subOptionAction)
+		#print(globalActionsInfos)
+
+					globalCurrentOption+=1
+				
+			globalLastLine = "TARGET"
 		
 
 	globalLine +=1

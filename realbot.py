@@ -38,6 +38,8 @@ def choose_action():
         utils.globalQ[stringState] = {}
         utils.globalR[stringState] = {}
 
+
+    print(utils.globalQ)
     for action in cards_ids_actions:
         strAction = str(action)
         nextState = ""
@@ -51,6 +53,8 @@ def choose_action():
             actions_rewards.append(5)
 
         else:
+
+            print(utils.globalQ)
 
             max = -100000
             for x in utils.globalQ[utils.globalR[stringState][strAction][1]]:
