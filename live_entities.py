@@ -59,7 +59,7 @@ class LiveEntity(Entity):
 		pass
 
 	def update_callback(self, caller):
-		terminal_output("ENTITY UPDATED", self, self.zone)
+		terminal_output("ENTITY UPDATED", self, self.zone, self.ownerstr)
 		# push data to an end-point
 		pass
 

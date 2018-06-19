@@ -1,7 +1,8 @@
 import pyautogui as ptg 
 import numpy as np
 from hearthstone.enums import GameTag
-
+#import realbot
+import json
 
 globalGameOn = False
 globalBotHP = 30
@@ -18,11 +19,17 @@ globalFriendlyCreaturesOnBoard = [False, False,False,False,False,False,False]
 globalFriendlyCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
 globalFriendlyCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
 globalFriendlyCreautresId = []
+globalFriendlyCreautresCardId = []
+globalFriendlyCreaturesDmg = []
+globalFriendlyCreaturesInfos = []
 globalFriendlyCreaturesOnBoardCount = 0
 globalOpponentCreaturesOnBoard = [False, False,False,False,False,False,False]
 globalOpponentCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
 globalOpponentCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
 globalOpponentCreautresId = []
+globalOpponentCreautresCardId = []
+globalOpponentCreaturesDmg = []
+globalOpponentCreaturesInfos = []
 globalOpponentCreaturesOnBoardCount = 0
 globalIsFirstPlayer = True
 globalCardsInDeckCount = 30
@@ -37,6 +44,17 @@ globalOptionsCardIds = []
 globalCurrentOptionsRewards =[]
 globalLastLine = ""
 
+globalQ = {}
+globalR = {}
+globalMajWaiting =False
+globalActionWaiting = []
+globalStateWaiting = []
+
+globalMouseMoving = False
+globalGameStarted = False
+globalChoiceToMake = False
+globalOpponentIsplayingHisTurn = False
+
 
 #mouse coordinates
 
@@ -45,6 +63,7 @@ globalPosBotHero_Confirm = [961, 843]
 globalPosHeroPower = [1147, 828]
 globalPosOpponentHero = [969, 191]
 globalPosCenter = [960, 540]
+globalPlay = [1439, 871]
 
 #pos for a two choice situation
 globalPosDoubleChoice = {
@@ -239,11 +258,17 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 	global globalFriendlyCreaturesAtk
 	global globalFriendlyCreaturesHP
 	global globalFriendlyCreautresId
+	global globalFriendlyCreautresCardId
+	global globalFriendlyCreaturesDmg
+	global globalFriendlyCreaturesInfos
 	global globalFriendlyCreaturesOnBoardCount
 	global globalOpponentCreaturesOnBoard
 	global globalOpponentCreaturesAtk
 	global globalOpponentCreaturesHP
 	global globalOpponentCreautresId
+	global globalOpponentCreautresCardId
+	global globalOpponentCreaturesDmg
+	global globalOpponentCreaturesInfos
 	global globalOpponentCreaturesOnBoardCount
 	global globalIsFirstPlayer
 	global globalCardsInDeckCount
@@ -258,51 +283,123 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 	global globalOptionsInfos
 	global globalLastLine
 	global globalOptionsCardIds
+	
+	global globalR
+	global globalQ
+	global globalActionWaiting
+	global globalStateWaiting
+	global globalMajWaiting
+
+	global globalMouseMoving
+	global globalGameStarted
+	global globalChoiceToMake
+	global globalOpponentIsplayingHisTurn
 
 	#initiate game
-	if (msg_type == "ENTITY CREATED") & (obj.__class__.__name__ == "LiveGame"):
-		globalBotHP = 30
-		globalBaseBotHP = 30
-		globalBotArmor = 0
-		globalBaseOpponentHP = 30
-		globalBaseOpponentHP = 30
-		globalOpponentArmor = 0 
-		#globalFriendlyCreaturesOnBoard = [False, False,False,False,False,False,False]
-		#globalFriendlyCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
-		#globalFriendlyCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
-		#globalFriendlyCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
-		globalFriendlyCreaturesAtk =[]
-		globalFriendlyCreaturesHP = []
-		globalFriendlyCreautresId = []
-		#globalOpponentCreaturesOnBoard = [False, False,False,False,False,False,False]
-		globalFriendlyCreaturesOnBoardCount = 0
-		#globalOpponentCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
-		#globalOpponentCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
-		#globalOpponentCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
-		globalOpponentCreaturesAtk =[]
-		globalOpponentCreaturesHP = []
-		globalOpponentCreautresId = []
-		globalOpponentCreaturesOnBoardCount = 0
-		globalCardsInDeckCount = 30
-		globalCardsInHandCount = 0
-		globalCardsInHandId = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,]
-		globalBotSecretCount = 0
-		globalOpponentSecretCount = 0
-		globalCurrentOption = -1
-		globalOptionsInfos =[]
-		globalCurrentOptionsRewards = []
-		print("Starting new game")
+	if (msg_type == "ENTITY CREATED"):
+		if (obj.__class__.__name__ == "LiveGame"):
+			globalBotHP = 30
+			globalBaseBotHP = 30
+			globalBotArmor = 0
+			globalBaseOpponentHP = 30
+			globalBaseOpponentHP = 30
+			globalOpponentArmor = 0 
+			#globalFriendlyCreaturesOnBoard = [False, False,False,False,False,False,False]
+			#globalFriendlyCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
+			#globalFriendlyCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
+			#globalFriendlyCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
+			globalFriendlyCreaturesAtk =[]
+			globalFriendlyCreaturesHP = []
+			globalFriendlyCreautresId = []
+			globalFriendlyCreaturesInfos =[]
+			#globalOpponentCreaturesOnBoard = [False, False,False,False,False,False,False]
+			globalFriendlyCreaturesOnBoardCount = 0
+			#globalOpponentCreaturesAtk = [-1,-1,-1,-1,-1,-1,-1,-1]
+			#globalOpponentCreaturesHP = [-1,-1,-1,-1,-1,-1,-1,-1]
+			#globalOpponentCreautresId = [-1,-1,-1,-1,-1,-1,-1,-1]
+			globalOpponentCreaturesAtk =[]
+			globalOpponentCreaturesHP = []
+			globalOpponentCreautresId = []
+			globalOpponentCreaturesInfos =[]
+			globalOpponentCreaturesOnBoardCount = 0
+			globalCardsInDeckCount = 30
+			globalCardsInHandCount = 0
+			globalCardsInHandId = []
+			globalBotSecretCount = 0
+			globalOpponentSecretCount = 0
+			globalCurrentOption = -1
+			globalOptionsInfos =[]
+			globalCurrentOptionsRewards = []
+			print("Starting new game")
 
-		if obj.id>68:
-			globalOpponentCreautresId.append(obj)
+			globalGameStarted = True
+
+		if obj.id == 68:
+			if globalCardsInHandCount == 4:
+				obj.tags['GameTag.ZONE_POSITION'] = 5
+
+
+	if (msg_type == "ENTITY UPDATED"):
+		if (obj.card_id):
+			if ( (attr == 0) | (attr == 3) | (attr == 2)):
+				globalCardsInHandId.append(obj.card_id)
+				globalCardsInHandId.sort()
+
+			
 
 	#updates stats
 	if (msg_type == "TAG UPDATED"):
+		
+		if attr == 198:
+			if (value == 12):
+				globalOpponentIsplayingHisTurn = True
+
+		#click after end of game
+		if attr == 13:
+			globalMouseMoving = True
+			ptg.moveTo(118, 664, 0.8)
+			ptg.click()
+			ptg.click()
+			ptg.moveTo(globalPlay[0], globalPlay[1], 0.8)
+			ptg.click()
+			globalMouseMoving = False
+
+		if attr == 17:
+			if obj.id == 2:
+				#won game
+				if value == 4:
+					globalR[globalStateWaiting][globalActionWaiting][0] = 1000
+					globalR[globalStateWaiting][globalActionWaiting][1] = globalStateWaiting
+					globalGameStarted = False
+
+					with open('r.json', 'w') as rjson:  
+   						json.dump(globalR, rjson, indent=4)
+
+					with open('q.json', 'w') as qjson:  
+						json.dump(globalQ, qjson, indent=4)
+					
+				#suicided
+				if value == 5:
+					globalGameStarted = False
+					if globalMajWaiting:
+						globalR[globalStateWaiting][globalActionWaiting][0] = -1000
+						globalR[globalStateWaiting][globalActionWaiting][1] = globalStateWaiting
+						globalQ[globalStateWaiting][globalActionWaiting][1] = globalStateWaiting
+
+				#lost game not needed because reward won't go up
+
+
+		#confirm mulligan
+		if (attr == 19) & (value == 4):
+			globalMouseMoving = True
+			ptg.moveTo(globalPosBotHero_Confirm[0], globalPosBotHero_Confirm[1], 0.7)
+			ptg.click()
+			globalMouseMoving = False
 
 		#updates hand cards
-		if attr == 263:
-			globalCardsInHandId[value-1] == obj.card_id
-			globalCardsInHandCount +=1
+		#if attr == 263:
+		#	globalCardsInHandId[value-1] == obj.card_id
+		#	globalCardsInHandCount +=1
 		
 		#updates number cards in deck
 		if attr == 399:
@@ -310,7 +407,50 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 		if (attr == 49) & (value == 1):
 			obj.tags['GameTag.ZONE'] = 1
+			if obj.ownerstr == "The Innkeeper":
+				#globalOpponentCreautresId.append(obj.id)
+				#globalOpponentCreautresCardId.append(obj.card_id)
+				#globalOpponentCreaturesDmg.append(0)
+				globalOpponentCreaturesInfos.append([obj.card_id, 0, obj.id])
+				globalOpponentCreaturesInfos.sort(key=lambda info: info[0])
+				globalOpponentCreaturesOnBoardCount +=1
+			else:
+				#globalFriendlyCreautresId.append(obj.id)
+				#globalFriendlyCreautresCardId.append(obj.card_id)
+				#globalFriendlyCreaturesDmg.append(0)
+				globalFriendlyCreaturesInfos.append([obj.card_id, 0, obj.id])
+				globalFriendlyCreaturesInfos.sort(key=lambda info: info[0])
+				globalFriendlyCreaturesOnBoardCount +=1
 
+		#cards goes to graveyard: out of the previous zone
+		if (attr == 49) & (value == 5):
+			if obj.ownerstr == "The Innkeeper":
+				for x in globalOpponentCreaturesInfos:
+					if x[2] == obj.id:
+						globalOpponentCreaturesInfos.remove(x)
+						globalOpponentCreaturesOnBoardCount -=1
+
+			else:
+				if obj.tags['GameTag.Zone'] == 1:
+					for x in globalFriendlyCreaturesInfos:
+						if x[2] == obj.id:
+							globalFriendlyCreaturesInfos.remove(x)
+							globalFriendlyCreaturesOnBoardCount -=1
+
+				else:
+					globalCardsInHandId.remove(x.card_id)
+
+		# update creatures dmg
+		if (obj.id != 64) & (obj.id != 66) & (attr == 44):
+			if obj.ownerstr == "The Innkeeper":
+				for x in globalOpponentCreaturesInfos:
+					if x[2] == obj.id:
+						x[1] = value
+
+			else:
+				for x in globalFriendlyCreaturesInfos:
+					if x[2] == obj.id:
+						x[1] = value
 
 
 		# updates bot stats
@@ -352,12 +492,24 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		# updates opponent creatures 
 
 	if msg_type == "END TURN":
+
+		if globalMajWaiting:
+			state = [globalBotManaTotal, globalBotManaTotal, globalBotHP, globalOpponentHP, globalFriendlyCreaturesInfos, globalOpponentCreaturesInfos]
+			stringState = str(state)
+
+			globalQ[globalStateWaiting][globalActionWaiting][1] = stringState
+
+			globalMajWaiting = False
+
+
 		zoneOrigin = "endturn"
 		globalOptionsInfos = []
 		globalOptionsInfos.append([zoneOrigin])
 		globalCurrentOption = 0
 		globalOptionsCardIds = []
 		globalOptionsCardIds.append([])
+
+		globalChoiceToMake = True
 
 	if msg_type == "OPTION LISTED":
 		if (obj== 0) | (obj== 3) | (obj == 2):
@@ -376,6 +528,10 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		elif (obj != 65) & (obj != 64):
 			originPos = globalFriendlyCreaturesOnBoard.index(obj)
 
+			#if owner = innkeeper : mettre a jour son cote
+			#lese if zone = 1 mettre a jour cote bot
+			
+
 		globalLastLine = "OPTION"
 
 		globalOptionsInfos.append([zoneOrigin, originPos])
@@ -387,7 +543,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 			originCardId = obj
 
 		globalOptionsCardIds.append([originCardId])
-		print(globalOptionsCardIds)
+#print(globalOptionsCardIds)
 		globalCurrentOption += 1
 
 	if msg_type == "TARGET LISTED":
@@ -420,7 +576,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 			targetCardId = obj
 		
 		if globalLastLine == "OPTION":
-			print(globalOptionsInfos)
+#print(globalOptionsInfos)
 			globalOptionsInfos[globalCurrentOption].extend([zoneDest, targetPos])
 			globalOptionsCardIds[globalCurrentOption].append(targetCardId)
 
@@ -428,7 +584,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		else:
 			suboption = globalOptionsInfos[globalCurrentOption].copy()
 			suboptionCardId = globalOptionsCardIds[globalCurrentOption].copy()
-			print("avant :", globalOptionsInfos)
+#print("avant :", globalOptionsInfos)
 			suboption[2] = zoneDest
 			suboption[3] = targetPos
 			globalOptionsInfos.append(suboption)
@@ -437,7 +593,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 			suboptionCardId[1] = targetCardId
 			globalOptionsCardIds.append(suboptionCardId)
-			print(globalOptionsCardIds)
+#print(globalOptionsCardIds)
 
 			globalCurrentOption+=1
 		globalLastLine = "TARGET"
@@ -460,11 +616,15 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 #secondTargetPos corresponds to the position of the target if creature with a battlecry needing a target
 def play_option(zoneOrigin, originPos = None, zoneDest = None, targetPos = None, secondTargetZone = None, secondTargetPos = None):
 
+	global globalMouseMoving
+
 	"""defining the origin positions """
 	#ending the turn
 	if zoneOrigin == "endturn":
+		globalMouseMoving = True
 		ptg.moveTo(globalPosEndTurn[0], globalPosEndTurn[1] )
 		ptg.click()
+		globalMouseMoving = False
 
 	else :
 
@@ -481,8 +641,8 @@ def play_option(zoneOrigin, originPos = None, zoneDest = None, targetPos = None,
 				yorigin = globalPosBotBoard[trueOriginPos][1]
 
 		if zoneOrigin == "hand":
-			xorigin = globalPosHand[globalCardsInHandCount][originPos-1][0]
-			yorigin = globalPosHand[globalCardsInHandCount][originPos-1][1]
+			xorigin = globalPosHand[globalCardsInHandCount][originPos][0]
+			yorigin = globalPosHand[globalCardsInHandCount][originPos][1]
 
 		if zoneOrigin == "heropower":
 			xorigin = globalPosHeroPower[0]
@@ -515,10 +675,12 @@ def play_option(zoneOrigin, originPos = None, zoneDest = None, targetPos = None,
 					xdest = globalPosEnemyBoard[trueTargetPos][0]
 					ydest = globalPosEnemyBoard[trueTargetPos][1]
 
+		globalMouseMoving = True
 		ptg.moveTo(xorigin, yorigin, 0.75)
 		ptg.click()
 		ptg.dragTo(xdest, ydest)
 		ptg.click()
+		globalMouseMoving = False
 
 		if secondTargetPos:
 			if secondTargetZone == "friendly":
