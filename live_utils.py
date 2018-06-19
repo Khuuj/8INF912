@@ -33,6 +33,7 @@ globalGameState = "none" #lose/win
 globalLine = 0
 globalCurrentOption = -1
 globalOptionsInfos =[]
+globalOptionsCardIds = []
 globalCurrentOptionsRewards =[]
 globalLastLine = ""
 
@@ -256,6 +257,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 	global globalCurrentOption
 	global globalOptionsInfos
 	global globalLastLine
+	global globalOptionsCardIds
 
 	#initiate game
 	if (msg_type == "ENTITY CREATED") & (obj.__class__.__name__ == "LiveGame"):
@@ -344,6 +346,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 		# updates bot creatures
 		#if (obj.id < 34 
+		#not especially needed : partly contained in actions
 
 
 		# updates opponent creatures 
@@ -353,6 +356,8 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		globalOptionsInfos = []
 		globalOptionsInfos.append([zoneOrigin])
 		globalCurrentOption = 0
+		globalOptionsCardIds = []
+		globalOptionsCardIds.append([])
 
 	if msg_type == "OPTION LISTED":
 		if (obj== 0) | (obj== 3) | (obj == 2):
@@ -374,6 +379,15 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		globalLastLine = "OPTION"
 
 		globalOptionsInfos.append([zoneOrigin, originPos])
+
+		#add OptionscardIds origin info
+		if value:
+			originCardId = value.card_id
+		else:
+			originCardId = obj
+
+		globalOptionsCardIds.append([originCardId])
+		print(globalOptionsCardIds)
 		globalCurrentOption += 1
 
 	if msg_type == "TARGET LISTED":
@@ -393,25 +407,38 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 				targetPos = globalFriendlyCreaturesOnBoard.index(obj)
 
 		if obj == 64:
-			print("ZEIORUJZOEIRUZEIO")
 			zoneDest = "friendly"
 			targetPos = 0
 		if obj == 66:
 			zoneDest = "opponent"
 			targetPos = 0
+
+		#add OptionscardIds origin info
+		if value:
+			targetCardId = obj.card_id
+		else:
+			targetCardId = obj
 		
 		if globalLastLine == "OPTION":
 			print(globalOptionsInfos)
 			globalOptionsInfos[globalCurrentOption].extend([zoneDest, targetPos])
+			globalOptionsCardIds[globalCurrentOption].append(targetCardId)
+
 
 		else:
 			suboption = globalOptionsInfos[globalCurrentOption].copy()
+			suboptionCardId = globalOptionsCardIds[globalCurrentOption].copy()
 			print("avant :", globalOptionsInfos)
 			suboption[2] = zoneDest
 			suboption[3] = targetPos
 			globalOptionsInfos.append(suboption)
 			print("apres :", globalOptionsInfos)
-		
+			
+
+			suboptionCardId[1] = targetCardId
+			globalOptionsCardIds.append(suboptionCardId)
+			print(globalOptionsCardIds)
+
 			globalCurrentOption+=1
 		globalLastLine = "TARGET"
 		

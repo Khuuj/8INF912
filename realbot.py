@@ -26,6 +26,8 @@ import live_utils as ut
 # globalOptions = []
 # globalGameState = "none" #lose/win
 
+
+
 def main():
     try:
         file = 'E:\Battle.net\Hearthstone\Logs\Power.log'
@@ -38,7 +40,7 @@ def main():
             ## voir methode_perso.txt (on met les rewards a jour en meme temps)
             ## pour mettre à jour l'état accessible par l'action, 
             ##                  si action == fin du tour meme etat (on boucle) [pour l'instant]
-            ##                  sinon mettre a jour l'état des qu'une action nouvelle action est proposée en gardant une variable majNotDone=true
+            ##                  sinon mettre a jour l'état des qu'une action nouvelle action est proposée en gardant une variable majWaiting=true
             ##                  cas special si majNotDone = true et game=win ET hpopponent<=0 mettre recompense à 100 et ajouter etat win aux etats accessibles
         
     except:
