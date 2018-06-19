@@ -25,7 +25,7 @@ def choose_action():
     gamma = 0.8
 
     available_actions = utils.globalOptionsInfos
-    cards_ids_actions = utils.globalOptionsCardIds
+    cards_ids_actions = utils.globalActionsInfos
     actions_rewards = []
 
     state = [utils.globalBotManaTotal, utils.globalBotManaAvailable, utils.globalBotHP, utils.globalOpponentHP, utils.globalFriendlyCreaturesInfos, utils.globalOpponentCreaturesInfos]
