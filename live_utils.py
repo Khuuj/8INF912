@@ -551,12 +551,13 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 		globalLastLine = "OPTION"
 
+		action_infos = [originCardId]
+
 		if zoneOrigin == "play":
 			for x in globalFriendlyCreaturesInfos:
 				if x[2] == value.id:
 					originDmg = x[1]
-
-		action_infos = [originCardId, originDmg]
+					action_infos.append(originDmg)
 
 
 		if (action_infos in globalActionsInfos):
