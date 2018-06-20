@@ -71,7 +71,7 @@ def choose_action():
     index = actions_rewards_max[0]
 
     if np.size(actions_rewards_max)>1:
-        index = np.random.choice(actions_rewards_max[0])
+        index = np.random.choice(actions_rewards_max)
 
     if nextState!=stringState:
         if utils.globalR[stringState][str(cards_ids_actions[index])][1] == "":
@@ -120,7 +120,7 @@ def main():
             print(utils.globalGameStarted, utils.globalMouseMoving)
             if utils.globalGameStarted & (not utils.globalMouseMoving) & utils.globalChoiceToMake:
                 if utils.globalOpponentIsplayingHisTurn:
-                    sleep(8)
+                    sleep(15)
                 print("chosing action")
 
                 choose_action()

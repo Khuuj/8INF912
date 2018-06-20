@@ -89,36 +89,36 @@ globalPosQuadrupleChoice = {
 
 #B1-B13 = all board positions on bot side
 globalPosBotBoard = {
-    1 :(590, 597),
-    2 :(640, 590),
-    3 :(710, 605),
-    4 :(768, 584),
-    5 :(837, 612),
-    6 :(893,579),
+    1 :(567, 597),
+    2 :(632, 590),
+    3 :(697, 605),
+    4 :(762, 584),
+    5 :(827, 612),
+    6 :(902,579),
     7 :(967, 613),
     8 :(1027, 585),
-    9 :(1085, 592),
-    10 :(1150, 584),
-    11 :(1218, 603),
-    12 :(1277, 608),
-    13 :(1342, 592)
+    9 :(1100, 592),
+    10 :(1164, 584),
+    11 :(1229, 603),
+    12 :(1294, 608),
+    13 :(1358, 592)
 }
 
 #E1-E13 = all board positions on opponent side
 globalPosEnemyBoard = {
-    1 :(590, 397),
-    2 :(640, 397),
-    3 :(710, 397),
-    4 :(768, 397),
-    5 :(837, 397),
-    6 :(893,397),
-    7 :(967, 397),
-    8 :(1027, 397),
-    9 :(1085, 397),
-    10 :(1150, 397),
-    11 :(1218, 397),
-    12 :(1277, 397),
-    13 :(1342, 397)
+    1 :(567, 402),
+    2 :(632, 402),
+    3 :(697, 402),
+    4 :(762, 402),
+    5 :(827, 402),
+    6 :(902,402),
+    7 :(967, 402),
+    8 :(1027, 402),
+    9 :(1100, 402),
+    10 :(1164, 402),
+    11 :(1229, 402),
+    12 :(1294, 402),
+    13 :(1358, 402)
 }
 
 #h1-h10 = all hand positions on bot side
@@ -403,7 +403,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 		#confirm mulligan
 		if (attr == 19) & (value == 4):
 			globalMouseMoving = True
-			ptg.moveTo(globalPosBotHero_Confirm[0], globalPosBotHero_Confirm[1], 0.7)
+			ptg.moveTo(globalPosBotHero_Confirm[0], globalPosBotHero_Confirm[1], 5)
 			ptg.click()
 			globalMouseMoving = False
 
@@ -436,6 +436,9 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 
 		#cards goes to graveyard: out of the previous zone
 		if (attr == 49) & (value == 5):
+			if obj.id == 68:
+				globalBotManaAvailable +=1 
+
 			if obj.ownerstr == "The Innkeeper":
 				for x in globalOpponentCreaturesInfos:
 					if x[2] == obj.id:
