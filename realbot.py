@@ -65,13 +65,29 @@ def choose_action():
             utils.globalQ[stringState][strAction][0] = reward
             actions_rewards.append(reward)
 
+
     np_actions_rewards = np.asarray(actions_rewards)
-    actions_rewards_max = np.where(np_actions_rewards == np.max(np_actions_rewards))[0]
 
-    index = actions_rewards_max[0]
+#    #choisi l'acction avec la récompense max
+#    actions_rewards_max = np.where(np_actions_rewards == np.max(np_actions_rewards))[0]
+#
+#    index = actions_rewards_max[0]
+#
+#    if np.size(actions_rewards_max)>1:
+#        index = np.random.choice(actions_rewards_max)
 
-    if np.size(actions_rewards_max)>1:
-        index = np.random.choice(actions_rewards_max)
+
+    #choisi l'action de maniere probabiliste pondérée
+    actions_sum = np.sum(np_actions_rewards)
+    actions_probabilities = np.zeros(len(np_actions_rewards))
+    for i in range (0, len(np_actions_rewards)):
+        actions_probabilities[i] = np.sum(np_actions_rewards[0:i+1])/actions_sum
+
+    random_value = np.random.uniform(0,1)
+    index = 0
+    while actions_probabilities[index] < random_value:
+        index += 1
+
 
     if nextState!=stringState:
         if utils.globalR[stringState][str(cards_ids_actions[index])][1] == "":

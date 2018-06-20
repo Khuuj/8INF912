@@ -381,6 +381,7 @@ def terminal_output(msg_type, obj, attr=None, value=None):
 				if value == 4:
 					globalR[globalStateWaiting][globalActionWaiting][0] = 1000
 					globalR[globalStateWaiting][globalActionWaiting][1] = globalStateWaiting
+					globalQ[globalStateWaiting][globalActionWaiting][1] = globalStateWaiting
 					globalGameStarted = False
 
 					with open('r.json', 'w') as rjson:  
@@ -685,7 +686,7 @@ def play_option(zoneOrigin, originPos = None, zoneDest = None, targetPos = None,
 	#ending the turn
 	if zoneOrigin == "endturn":
 		globalMouseMoving = True
-		ptg.moveTo(globalPosEndTurn[0], globalPosEndTurn[1] )
+		ptg.moveTo(globalPosEndTurn[0], globalPosEndTurn[1],0.7 )
 		ptg.click()
 		globalMouseMoving = False
 
