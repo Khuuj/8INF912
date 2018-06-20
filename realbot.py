@@ -43,12 +43,16 @@ def choose_action():
     for action in cards_ids_actions:
         strAction = str(action)
         nextState = ""
+        new_reward = 5
+
+        #cas action = fin de tour
         if action == []:
+            new_reward = 1 #discrimine le fin de tour (pour explorer) ; pas 0 pour permettre d'être sélectionnée
             nextState = stringState
 
         if not utils.globalR[stringState].__contains__(strAction):
-            utils.globalQ[stringState][strAction] = [5,nextState]
-            utils.globalR[stringState][strAction] = [5,nextState]
+            utils.globalQ[stringState][strAction] = [new_reward,nextState]
+            utils.globalR[stringState][strAction] = [new_reward,nextState]
 
             actions_rewards.append(5)
 
