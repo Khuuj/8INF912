@@ -5,6 +5,7 @@ from  live_parser import LiveLogParser
 import live_utils as utils
 import json
 import numpy as np
+import pyautogui as ptg
 
 
 
@@ -22,11 +23,13 @@ def choose_action():
 
     utils.globalMajWaiting = False
 
-    gamma = 0.8
+    gamma = 0.8 #affect l'influence des actions futures
 
     available_actions = utils.globalOptionsInfos
     cards_ids_actions = utils.globalActionsInfos
     actions_rewards = []
+    print(available_actions)
+
 
     state = [utils.globalBotManaTotal, utils.globalBotManaAvailable, utils.globalBotHP, utils.globalOpponentHP, utils.globalFriendlyCreaturesInfos, utils.globalOpponentCreaturesInfos]
     stringState =  str(state)
@@ -39,7 +42,7 @@ def choose_action():
         utils.globalR[stringState] = {}
 
 
-    print(utils.globalQ)
+    #print(utils.globalQ)
     for action in cards_ids_actions:
         strAction = str(action)
         nextState = ""
@@ -51,20 +54,23 @@ def choose_action():
             nextState = stringState
 
         if not utils.globalR[stringState].__contains__(strAction):
-            utils.globalQ[stringState][strAction] = [new_reward,nextState]
+            utils.globalQ[stringState][strAction] = [0,nextState]
             utils.globalR[stringState][strAction] = [new_reward,nextState]
 
             actions_rewards.append(5)
 
         else:
 
-            print(utils.globalQ)
+            "print(utils.globalQ)"
+            max = 0
+            if utils.globalR[stringState][strAction][1] != "":
+                for x in utils.globalQ[utils.globalR[stringState][strAction][1]]:
+                    print(x)
+                    if utils.globalQ[utils.globalR[stringState][strAction][1]][x][0] > max:
+                        max = utils.globalQ[utils.globalR[stringState][strAction][1]][x][0]
 
-            max = -100000
-            for x in utils.globalQ[utils.globalR[stringState][strAction][1]]:
-                if utils.globalQ[utils.globalR[stringState][strAction][1]][x][0] > max:
-                    max = utils.globalQ[utils.globalR[stringState][strAction][1]][x][0]
 
+            #Idée pour favoriser l'exploration : si une action n'a pas d'état suivant connu: doubler sa valeur (reward)
             reward = utils.globalR[stringState][strAction][0] + gamma*max
             utils.globalQ[stringState][strAction][0] = reward
             actions_rewards.append(reward)
@@ -111,6 +117,13 @@ def choose_action():
 
     utils.choiceToMake = False
 
+    if (args[0] == "hand"):
+        if (args[1] < 5) & (utils.globalCoin != 0):
+            utils.globalCoin.tags['GameTag.ZONE_POSITION'] -=1
+
+    utils.globalEndTurnListed = False
+
+    print("action:", args)
     utils.play_option(args[0], args[1],args[2],args[3])
 
     
@@ -136,15 +149,43 @@ def main():
         liveParser.start()
 
         while True:
-            sleep(5)
-            print(utils.globalGameStarted, utils.globalMouseMoving)
-            if utils.globalGameStarted & (not utils.globalMouseMoving) & utils.globalChoiceToMake:
-                if utils.globalOpponentIsplayingHisTurn:
-                    sleep(15)
-                print("chosing action")
+            sleep(1)
 
+            can_play = False
+            im = ptg.screenshot()
+
+            #pixel_confirm = im.getpixel(966, 876)
+            #if pixel_confirm == ()
+
+            yellow_endturn = im.getpixel((1561, 476))
+            green_endturn = im.getpixel((1556, 507))
+
+            print(yellow_endturn)
+            print(green_endturn)
+
+            if ( (green_endturn[2] < 10) | (yellow_endturn[2] < 10) ) :
+                can_play = True
+
+            print(utils.globalEndTurnListed)
+            print(can_play)
+
+            if can_play & utils.globalEndTurnListed:
+                sleep(7)
+                print("chosing action")
                 choose_action()
-                utils.globalOpponentIsplayingHisTurn = False
+
+
+            #"""print(utils.globalGameStarted, utils.globalMouseMoving)
+            #if utils.globalGameStarted & (not utils.globalMouseMoving) & utils.globalChoiceToMake:
+            #    if utils.globalOpponentIsplayingHisTurn:
+            #        sleep(30)
+            #    print("chosing action")
+#
+            #    choose_action()
+            #    utils.globalOpponentIsplayingHisTurn = False"""
+
+
+
             ## calls the bot here
             ## voir methode_perso.txt (on met les rewards a jour en meme temps)
             ## pour mettre à jour l'état accessible par l'action, 
